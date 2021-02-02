@@ -23,7 +23,6 @@ fn command_line_interface<'a>() -> ArgMatches<'a> {
         .arg(Arg::with_name("QUALITY").short("q").long("min_quality").takes_value(true).help("Minimum average sequence quality [0]"))
         .arg(Arg::with_name("PERCENT").short("p").long("keep_percent").takes_value(true).help("Keep best percent quality bases [0]"))
         .arg(Arg::with_name("BASES").short("b").long("keep_bases").takes_value(true).help("Keep reads with best quality bases [0]"))
-        .arg(Arg::with_name("CRAB").short("c").long("crab").takes_value(false).help("Rust-Bio parser (fastq only) [false]"))
         .arg(Arg::with_name("DETAIL").short("d").long("detail").multiple(true).help("Print detailed read summary [false]"))
         .arg(Arg::with_name("TOP").short("t").long("top").takes_value(true).help("Print <top> length + quality reads [5]"))
     .get_matches()
@@ -42,8 +41,7 @@ fn main() -> Result<(), Error> {
     let keep_percent: f64 = cli.value_of("PERCENT").unwrap_or("0").parse().unwrap();
     let keep_bases: usize = cli.value_of("BASES").unwrap_or("0").parse().unwrap();
     let top: u64 = cli.value_of("TOP").unwrap_or("5").parse().unwrap();
-    let crab: bool = cli.is_present("CRAB");
-    
+
     let detail = cli.occurrences_of("DETAIL");
 
     if keep_percent > 0.0 || keep_bases > 0 {
@@ -66,15 +64,12 @@ fn main() -> Result<(), Error> {
         
         // Standard mode
         
-        let (reads, base_pairs, read_lengths, read_qualities) = if crab {
-            crabcast_filter(fastx, output, min_length, max_length, min_quality)
-        } else {
-            if min_length > 0 || min_quality > 0.0 || max_length > 0 {
+        let (reads, base_pairs, read_lengths, read_qualities) = if min_length > 0 || min_quality > 0.0 || max_length > 0 {
                 needlecast_filter(fastx, output, min_length, max_length, min_quality)
             } else {
                 needlecast_stats(&fastx)
             }
-        }.expect("Carcinised error encountered - what the crab?");
+        }.expect("Failure to needlecast to destination - what is going on?");
         
         // This check prevents the stats computation from panicking on empty vec, see tests 
         if reads == 0 {
@@ -92,53 +87,6 @@ fn main() -> Result<(), Error> {
 }
 
 // Main functions
-
-fn crabcast_filter(fastx: String, output: String, min_length: u64, max_length: u64, min_quality: f32) -> Result<(u64, u64, Vec<u64>, Vec<f32>), Error>  {
-
-    // Rust-Bio parser, Fastq only
-
-    let input_handle = get_input_handle(fastx).expect("failed to initiate fastx input handle");
-    let output_handle = get_output_handle(output).expect("failed to initiate fastx output handle");
-
-    let reader = fastq::Reader::new(input_handle);
-    let mut writer = fastq::Writer::new(output_handle);
-
-    let _max_length = if max_length <= 0 { u64::MAX } else { max_length };
-
-    let mut base_pairs: u64 = 0;
-    let mut reads: u64 = 0;
-    let mut read_lengths: Vec<u64> = Vec::new();
-    let mut read_qualities: Vec<f32> = Vec::new();
-
-    for result in reader.records() {
-        
-        let record = result.expect("invalid sequence record");
-
-        // Nanopore quality score computation
-
-        let quality_values = record.qual().to_vec();
-        let mean_error = get_mean_error(&quality_values);
-        let mean_quality: f32 = -10f32*mean_error.log(10.0);
-
-        let seqlen = record.seq().len() as u64;
-                
-        if seqlen >= min_length && mean_quality >= min_quality && seqlen <= _max_length {
-            
-            read_lengths.push(seqlen);
-            read_qualities.push(mean_quality);            
-            base_pairs += seqlen;
-            reads += 1;
-
-            if min_length > 0 || min_quality > 0.0 || max_length > 0 {
-                writer.write_record(&record).expect("invalid record write");
-            }
-        }           
-
-    }  
-
-    Ok((reads, base_pairs, read_lengths, read_qualities))
-
-}
 
 fn needlecast_filter(fastx: String, output: String, min_length: u64, max_length: u64, min_quality: f32) -> Result<(u64, u64, Vec<u64>, Vec<f32>), Error> {
 
@@ -300,7 +248,7 @@ fn retain_indexed_quality_reads(read_qualities: Vec<f32>, read_lengths: Vec<u64>
         let mut bp_sum: usize = 0;
         for qtup in _indexed_qualities_retain.iter() {
             bp_sum += read_lengths[qtup.0 as usize] as usize;
-            if bp_sum >= keep_bases {
+            if bp_sum > keep_bases {
                 break;
             } else {
                 indexed_qualities_retain.push(*qtup);
@@ -750,49 +698,6 @@ mod tests {
         return root;
     }
 
-
-    // Crabcast based filters and stats
-
-    #[test]
-    fn test_crabcast_filter_all_pass() {
-        let test_file = get_test_fq();
-        let (reads, base_pairs, read_lengths, read_qualities) = crabcast_filter(test_file, String::from("/dev/null"), 1, 0, 7.0).unwrap();
-        assert_eq!(reads, 1);
-        assert_eq!(base_pairs, 12);
-        assert_eq!(read_lengths, vec![12]);
-        assert_eq!(read_qualities, vec![40.471283]);  // mean avg read qual - avg read q score is not unsigned integer!
-    }
-
-    #[test]
-    fn test_crabcast_filter_min_length_none_pass() {
-        let test_file = get_test_fq();
-        let (reads, base_pairs, read_lengths, read_qualities) = crabcast_filter(test_file, String::from("/dev/null"), 15, 0, 7.0).unwrap();
-        assert_eq!(reads, 0);
-        assert_eq!(base_pairs, 0);
-        assert_eq!(read_lengths, vec![]);
-        assert_eq!(read_qualities, vec![]);
-    }
-
-    #[test]
-    fn test_crabcast_filter_max_length_none_pass() {
-        let test_file = get_test_fq();
-        let (reads, base_pairs, read_lengths, read_qualities) = crabcast_filter(test_file, String::from("/dev/null"), 10, 10, 7.0).unwrap();
-        assert_eq!(reads, 0);
-        assert_eq!(base_pairs, 0);
-        assert_eq!(read_lengths, vec![]);
-        assert_eq!(read_qualities, vec![]);
-    }
-
-    #[test]
-    fn test_crabcast_filter_min_quality_none_pass() {
-        let test_file = get_test_fq();
-        let (reads, base_pairs, read_lengths, read_qualities) = crabcast_filter(test_file, String::from("/dev/null"), 10, 0, 60.0).unwrap();
-        assert_eq!(reads, 0);
-        assert_eq!(base_pairs, 0);
-        assert_eq!(read_lengths, vec![]);
-        assert_eq!(read_qualities, vec![]);
-    }
-
     // Needlecast based filters and stats
 
     #[test]
@@ -1060,51 +965,6 @@ mod tests {
             assert_eq!(&record.id(), b"id");
             assert_eq!(&record.raw_seq(), b"ACCGTAGGCTGA");
         }
-    }
-
-    // Rust-Bio IO
-
-    #[test]
-    fn test_crabcast_filter_input_fq_file() {
-        let test_file = get_test_fq();
-        let input_handle = get_input_handle(test_file).expect("invalid input handle");
-        let reader = fastq::Reader::new(input_handle);
-
-        for record in reader.records() {
-            let record = record.expect("invalid sequence record");
-            assert_eq!(record.check(), Ok(()));
-            assert_eq!(record.id(), "id");
-            assert_eq!(record.desc(), None);
-            assert_eq!(record.seq(), b"ACCGTAGGCTGA");
-            assert_eq!(record.qual(), b"IIIIIIJJJJJJ");
-        }
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_crabcast_filter_input_fq_gz_file() {
-        let test_file = get_test_fq_gz();
-        let input_handle = get_input_handle(test_file).expect("invalid input handle");
-        let reader = fastq::Reader::new(input_handle);
-        let _ = reader.records().next().unwrap().unwrap();
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_crabcast_filter_input_fa_file() {
-        let test_file = get_test_fa();
-        let input_handle = get_input_handle(test_file).expect("invalid input handle");
-        let reader = fastq::Reader::new(input_handle);
-        let _ = reader.records().next().unwrap().unwrap();
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_crabcast_filter_input_fa_gz_file() {
-        let test_file = get_test_fa_gz();
-        let input_handle = get_input_handle(test_file).expect("invalid input handle");
-        let reader = fastq::Reader::new(input_handle);
-        let _ = reader.records().next().unwrap().unwrap();
     }
 
     // Ordering

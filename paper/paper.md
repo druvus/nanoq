@@ -33,7 +33,7 @@ A common practice for quality control and filtering of reads for length and qual
 
 # Applications
 
-`Nanoq` is implemented in `Rust` using the read parsers from [`needletail`](https://github.com/onecodex/needletail) and [`Rust-Bio`](https://github.com/rust-bio/rust-bio) [@rustbio].
+`Nanoq` is implemented in `Rust` using the read parser from the [`needletail`](https://github.com/onecodex/needletail) library.
 
 Tests can be run within the `nanoq` repository:
 
@@ -72,7 +72,7 @@ Reads filtered by minimum read length (`--length`) and mean read quality (`--qua
 cat test.fq | nanoq -l 1000 -q 10 > reads.fq 
 ```
 
-Advanced two-pass filtering analogous to `Filtlong` removes the worst 20% of bases using sorted reads by quality (`--keep_percent`) or the worst quality reads until approximately 500 Mbp remain (`--keep_bases`): 
+Extended two-pass filtering analogous to `Filtlong` removes the worst 20% of bases using reads sorted by quality (`--keep_percent`) or the worst quality reads until approximately 500 Mbp remain (`--keep_bases`): 
 
 ```bash
 nanoq -f test.fq -p 80 -b 500000000  > reads.fq 
@@ -100,7 +100,7 @@ done
 
 # Benchmarks
 
-Benchmarks evaluate processing speed of a long-read filter and computation of summary statistics on the first 100,000 reads (`test.fq.gz` in Docker container) of the even [Zymo mock community](https://github.com/LomanLab/mockcommunity) [@zymo] (`GridION`) using the `nanoq:v0.2.0` [`Benchmark`](paper/Benchmarks) image (`Needletail` parser) with comparison to [`NanoFilt`](https://github.com/wdecoster/nanofilt), [`NanoStat`](https://github.com/wdecoster/nanostat) and [`Filtlong`](https://github.com/rrwick/Filtlong) 
+Benchmarks evaluate processing speed of a long-read filter and computation of summary statistics on the first 100,000 reads (`test.fq.gz` in Docker container) of the even [Zymo mock community](https://github.com/LomanLab/mockcommunity) [@zymo] (`GridION`) using the [`Benchmark`](paper/Benchmarks) image (`Needletail` parser) with comparison to [`NanoFilt`](https://github.com/wdecoster/nanofilt), [`NanoStat`](https://github.com/wdecoster/nanostat) (4 threads) and [`Filtlong`](https://github.com/rrwick/Filtlong) 
 
 ![Nanoq benchmarks compared to Filtlong and Nanopack on 100,000 reads of the Zymo mock community](benchmarks.png?raw=true "Nanoq benchmarks" )
 
