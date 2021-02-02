@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 def main():
 
     data = read_data()
-    plot_data(data)
+    # plot_data(data)
 
 def read_data() -> pandas.DataFrame:
 
