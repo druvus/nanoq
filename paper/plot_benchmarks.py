@@ -7,7 +7,10 @@ from matplotlib import pyplot as plt
 
 def main():
 
-    data = read_data()
+    data = read_data()\
+    
+    print(data)
+    
     # plot_data(data)
 
 def read_data() -> pandas.DataFrame:
@@ -39,8 +42,8 @@ def parse_time(file: Path, grep_str: str = ""):
     with file.open() as f:
         for line in f:
             content = line.strip()
-            if content.startswith(grep):
-                return content.replace(grep, '')
+            if content.startswith(grep_str):
+                return content.replace(grep_str, '')
     
     return
 
