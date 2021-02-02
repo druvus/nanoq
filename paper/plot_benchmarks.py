@@ -9,8 +9,10 @@ def main():
 
     data = read_data()\
     
-    print(data)
+    data['time'] = pandas.to_datetime(data['time'], format="%M:%S.%f")
     
+    print(data)
+
     # plot_data(data)
 
 def read_data() -> pandas.DataFrame:
@@ -24,7 +26,7 @@ def read_data() -> pandas.DataFrame:
             replicate, tool, ftype, mode = f.name.split("_")
 
             t = parse_time(f, grep_str=walltime)
-            mem = parse_time(f, grep_str=walltime) 
+            mem = parse_time(f, grep_str=memory) 
 
             data.append({
                 'replicate': replicate,
