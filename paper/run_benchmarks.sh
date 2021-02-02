@@ -3,14 +3,13 @@
 # RUN inside container (~5 hours runtime)
 
 TIMEFORMAT="%R"
+mkdir filtlong_filt nanoq_filt nanofilt_filt nanostat_stats nanoq_stats
 
 for i in $(seq 1 2); do
 
     echo "Replicate: $i"
 
     echo "Nanoq stats"
-
-    mkdir nanoq_stats
 
     # test file stat nanoq
     (/usr/bin/time -v cat test.fq | nanoq) 2> nanoq_stats/${i}_nanoq_fq_stat
@@ -21,8 +20,6 @@ for i in $(seq 1 2); do
 
     echo "Nanostat stats"
 
-    mkdir nanostat_stats
-
     # test file stat nanostat 4 cpu
     (/usr/bin/time -v NanoStat --fastq test.fq -t 4) 2> nanostat_stats/${i}_nanostat_fq_stat
     # test file stat gzipped nanostat 4 cpu
@@ -30,14 +27,10 @@ for i in $(seq 1 2); do
 
     echo "Nanofilt filters"
 
-    mkdir nanofilt_filt
-
     # test file filt nanofilt
     (/usr/bin/time -v cat test.fq | NanoFilt -l 5000 > /dev/null) 2> nanofilt_filt/${i}_nanofilt_fq_filt
     # test file filt gzipped nanofilt
     (/usr/bin/time -v zcat test.fq.gz | NanoFilt -l 5000 > /dev/null) 2> nanofilt_filt/${i}_nanofilt_gz_filt
-
-    mkdir nanoq_filt
 
     echo "Nanoq filters"
 
@@ -49,8 +42,6 @@ for i in $(seq 1 2); do
     (/usr/bin/time -v zcat test.fq.gz | nanoq -l 5000 -c > /dev/null) 2> nanoq_filt/${i}_nanoq_crab_filt
 
     echo "Filtlong filters"
-
-    mkdir filtlong_filt
 
      # test file filt filtlong
     (/usr/bin/time -v filtlong --min_length 5000 test.fq > /dev/null) 2> filtlong_filt/${i}_filtlong_fq_filt
