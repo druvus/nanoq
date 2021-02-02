@@ -5,7 +5,7 @@
 TIMEFORMAT="%R"
 mkdir filtlong_filt nanoq_filt nanofilt_filt nanostat_stats nanoq_stats
 
-for i in $(seq 1 2); do
+for i in $(seq 1 100); do
 
     echo "Replicate: $i"
 
@@ -15,8 +15,6 @@ for i in $(seq 1 2); do
     (/usr/bin/time -v cat test.fq | nanoq) 2> nanoq_stats/${i}_nanoq_fq_stat
     # test file gzipped stat nanoq
     (/usr/bin/time -v cat test.fq.gz | nanoq) 2> nanoq_stats/${i}_nanoq_gz_stat
-    # test file stat nanoq crab cast
-    (/usr/bin/time -v cat test.fq | nanoq -c) 2> nanoq_stats/${i}_nanoq_crab_stat
 
     echo "Nanostat stats"
 
@@ -38,8 +36,6 @@ for i in $(seq 1 2); do
     (/usr/bin/time -v cat test.fq | nanoq -l 5000 > /dev/null) 2> nanoq_filt/${i}_nanoq_fq_filt
     # test file filt gzipped nanoq
     (/usr/bin/time -v cat test.fq.gz | nanoq -l 5000 > /dev/null) 2> nanoq_filt/${i}_nanoq_gz_filt
-    # test file filt gzipped nanoq crab cast (no native gz support)
-    (/usr/bin/time -v zcat test.fq.gz | nanoq -l 5000 -c > /dev/null) 2> nanoq_filt/${i}_nanoq_crab_filt
 
     echo "Filtlong filters"
 
