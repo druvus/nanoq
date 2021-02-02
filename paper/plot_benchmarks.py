@@ -10,7 +10,7 @@ def main():
     data = read_data()\
     
     data['time'] = pandas.to_datetime(data['time'], format="%M:%S.%f")
-    data['time'] = data['time'].dt.microsecond/1e6
+    data['time'] = data['time'].dt.microsecond + data['time'].dt.microsecond/1e6
     data['mem'] = data['mem'].apply(lambda x: int(x)/1000)
 
     print(data)
