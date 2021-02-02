@@ -10,7 +10,7 @@ def main():
     data = read_data()\
     
     data['time'] = pandas.to_datetime(data['time'], format="%M:%S.%f")
-    
+    data['time'] = data['time'].apply(lambda x: x.seconds + x.microseconds/1e-06)
     print(data)
 
     # plot_data(data)
