@@ -2,16 +2,6 @@
 
 # RUN inside container (~5 hours runtime)
 
-cd /data
-
-if [ ! -f "/data/test.fq" ]; then
-    if [ ! -f "/data/test.fq.gz" ]; then
-        echo "test.fq.gz is missing!"
-        exit 1
-    fi
-    zcat test.fq.gz > test.fq
-fi
-
 TIMEFORMAT="%R"
 
 for i in $(seq 1 2); do
