@@ -11,7 +11,7 @@ def main():
     
     data['time'] = pandas.to_datetime(data['time'], format="%M:%S.%f")
     data['time'] = data['time'].dt.microsecond/1e6
-    data['mem'] = data['mem'].apply(lambda x: x/1000)
+    data['mem'] = data['mem'].apply(lambda x: int(x)/1000)
 
     print(data)
 
@@ -87,8 +87,8 @@ def plot_data(data: pandas.DataFrame) -> None:
     axes[1].set_xlabel("")
     axes[1].set_ylabel("seconds\n")
 
-    axes[0].title.set_text('Read filter')
-    axes[1].title.set_text('Read statistics')
+    axes[0].title.set_text('Read filter (walltime)')
+    axes[1].title.set_text('Read statistics (walltime)')
 
     plt.tight_layout()
     fig.savefig('benchmarks.png')
