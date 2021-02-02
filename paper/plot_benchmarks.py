@@ -12,18 +12,38 @@ def main():
 
 def read_data() -> pandas.DataFrame:
 
+    walltime = "Elapsed (wall clock) time (h:mm:ss or m:ss): "
+    memory = "Maximum resident set size (kbytes): "
+
     data = []
-    for f in Path('replicate_benchmarks').glob("*"):
-        df = pandas.read_csv(f, header=None, sep="\t", names=['time'])
+    for adir in Path('replicate_benchmarks').glob("*"):
+        for f in adir.glob("*"):
+            replicate, tool, ftype, mode = f.name.split("_")
 
-        tool, ftype, mode = f.name.split("_")
-        df['tool'] = [tool for _ in df.iterrows()]
-        df['ftype'] = [ftype for _ in df.iterrows()]
-        df['mode'] = [mode for _ in df.iterrows()]
+            t = parse_time(f, grep_str=walltime)
+            mem = parse_time(f, grep_str=walltime) 
 
-        data.append(df)
+            data.append({
+                'replicate': replicate,
+                'tool': tool,
+                'ftype': ftype,
+                'mode': mode,
+                'time': t,
+                'mem': mem
+            })
 
-    return pandas.concat(data)
+    return pandas.DataFrame(data)
+
+def parse_time(file: Path, grep_str: str = ""):
+
+    with file.open() as f:
+        for line in f:
+            content = line.strip()
+            if content.startswith(grep):
+                return content.replace(grep, '')
+    
+    return
+
 
 def plot_data(data: pandas.DataFrame) -> None:
 

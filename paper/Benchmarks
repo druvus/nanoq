@@ -1,14 +1,14 @@
 FROM continuumio/miniconda3
 
 LABEL name="nanoq-benchmarks"
-LABEL version="0.2  .0"
+LABEL version="0.2.1"
 LABEL author="esteinig"
 
-RUN apt-get update && apt-get install curl build-essential git -y
+RUN apt-get update && apt-get install curl build-essential git time -y
 
 ENV CONDA_DIR=/opt/conda
 
-ENV NANOQ_VERSION=v0.2.0
+ENV NANOQ_VERSION=v0.2.1
 ENV PATH=/opt/conda/bin:/rust/.cargo/bin:$PATH
 ENV CARGO_HOME=/rust/.cargo
 ENV RUSTUP_HOME=/rust/.rustup

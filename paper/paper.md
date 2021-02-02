@@ -100,22 +100,29 @@ done
 
 # Benchmarks
 
-Benchmarks evaluate processing speed of a long-read filter and computation of summary statistics on the first 100,000 reads (`test.fq.gz` in Docker container) of the even [Zymo mock community](https://github.com/LomanLab/mockcommunity) [@zymo] (`GridION`) using the `nanoq:v0.2.0` [`Benchmark`](paper/Benchmarks) image with comparison to [`NanoFilt`](https://github.com/wdecoster/nanofilt), [`NanoStat`](https://github.com/wdecoster/nanostat) and [`Filtlong`](https://github.com/rrwick/Filtlong)
+Benchmarks evaluate processing speed of a long-read filter and computation of summary statistics on the first 100,000 reads (`test.fq.gz` in Docker container) of the even [Zymo mock community](https://github.com/LomanLab/mockcommunity) [@zymo] (`GridION`) using the `nanoq:v0.2.0` [`Benchmark`](paper/Benchmarks) image (`Needletail` parser) with comparison to [`NanoFilt`](https://github.com/wdecoster/nanofilt), [`NanoStat`](https://github.com/wdecoster/nanostat) and [`Filtlong`](https://github.com/rrwick/Filtlong) 
 
 ![Nanoq benchmarks compared to Filtlong and Nanopack on 100,000 reads of the Zymo mock community](benchmarks.png?raw=true "Nanoq benchmarks" )
 
-| program         | ftype  |task   | mean sec (+/- sd)   |  ~ reads / sec  | speedup |
-| -------------   | -------|-------|---------------------|-----------------|---------|
-| nanofilt        | fq     |filter | 35.25 (0.35)        | 2,836           | 1.00 x  |
-| filtlong        | fq     |filter | 16.71 (0.47)        | 5,984           | 2.11 x  |
-| nanoq           | fq     |filter | 03.63 (0.45)        | 27,548          | 9.71 x  |
-| nanostat        | fq     |stats  | 37.39 (0.50)        | 2,674           | 1.00 x  |
-| nanoq           | fq     |stats  | 03.57 (0.57)        | 28,011          | 10.4 x  |
-| nanofilt        | fq.gz  |filter | 35.58 (0.36)        | 2,810           | 1.00 x  |
-| filtlong        | fq.gz  |filter | 23.84 (0.60)        | 4,195           | 1.49 x  |
-| nanoq           | fq.gz  |filter | 06.37 (0.41)        | 14,858          | 5.28 x  |
-| nanostat        | fq.gz  |stats  | 42.21 (0.37)        | 2,369           | 1.00 x  |
-| nanoq           | fq.gz  |stats  | 06.30 (0.28)        | 15,873          | 6.70 x  |
+## Read filter
+
+| program         | ftype  | mean sec (+/- sd)   |  ~ reads / sec  | speedup |
+| -------------   | -------|---------------------|-----------------|---------|
+| nanofilt        | fq     | 35.25 (0.35)        | 2,836           | 1.00 x  |
+| filtlong        | fq     | 16.71 (0.47)        | 5,984           | 2.11 x  |
+| nanoq           | fq     | 03.63 (0.45)        | 27,548          | 9.71 x  |
+| nanofilt        | fq.gz  | 35.58 (0.36)        | 2,810           | 1.00 x  |
+| filtlong        | fq.gz  | 23.84 (0.60)        | 4,195           | 1.49 x  |
+| nanoq           | fq.gz  | 06.37 (0.41)        | 14,858          | 5.28 x  |
+
+## Read statistics
+
+| program         | ftype  | mean sec (+/- sd)   |  ~ reads / sec  | speedup |
+| -------------   | -------|---------------------|-----------------|---------|
+| nanostat        | fq     | 37.39 (0.50)        | 2,674           | 1.00 x  |
+| nanoq           | fq     | 03.57 (0.57)        | 28,011          | 10.4 x  |
+| nanostat        | fq.gz  | 42.21 (0.37)        | 2,369           | 1.00 x  |
+| nanoq           | fq.gz  | 06.30 (0.28)        | 15,873          | 6.70 x  |
 
 # Availability
 
