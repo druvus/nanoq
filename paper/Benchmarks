@@ -23,6 +23,6 @@ RUN conda install -c conda-forge -c bioconda -c esteinig --yes \
     
 RUN mkdir /rust && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-RUN git clone -b $NANOQ_VERSION --single-branch https://github.com/esteinig/nanoq.git
+RUN git clone https://github.com/esteinig/nanoq.git
 RUN cd ./nanoq && cargo build --release && mv target/release/nanoq /usr/local/bin
 
